@@ -1,19 +1,7 @@
 /* =========================================================================
-   UMRAH PACKAGE STUDIO
-   Vanilla JS, single-file app logic.
-   Sections:
-     1. Utilities
-     2. Data model + defaults
-     3. Persistence (localStorage) + Package Library
-     4. Theme presets
-     5. Icon library (SVG)
-     6. Toast system
-     7. Gallery (entry screen)
-     8. Editor (sidebar forms)
-     9. Preview renderer (poster)
-    10. Toolbar actions (new/save/duplicate/reset/export)
-    11. Export system (print / pdf / png / jpg, page sizes)
-    12. Init
+   UMRAH PACKAGE STUDIO — ENHANCED EDITION
+   Features: 24+ templates, undo/redo, zoom, import/export JSON,
+   keyboard shortcuts, enhanced library, and more.
    ========================================================================= */
 
 /* ---------------------------- 1. UTILITIES ---------------------------- */
@@ -23,18 +11,27 @@ const uid = () => Math.random().toString(36).slice(2,9) + Date.now().toString(36
 function debounce(fn, ms){ let t; return (...a)=>{ clearTimeout(t); t=setTimeout(()=>fn(...a), ms); }; }
 function escapeHtml(str){ return (str||'').toString().replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 function clamp(n,min,max){ return Math.max(min, Math.min(max, n)); }
+function download(filename, content, type='application/json'){
+  const blob = new Blob([content], { type });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename; a.click();
+  URL.revokeObjectURL(url);
+}
 
 /* --------------------- 2. DATA MODEL + DEFAULTS ------------------------ */
 function makeHotel(){
   return { name:'', distance:'', unit:'m', location:'', image:'', icon:'', rating:4, mapsLink:'' };
 }
-function makePackage(title, color){
+function makePackage(title, color, subtitle=''){
   return {
-    id: uid(), title, subtitle:'', color, badge:'', description:'',
+    id: uid(), title, subtitle, color, badge:'', description:'',
     makkah: makeHotel(), madinah: makeHotel(),
-    pricing: [ { id: uid(), roomType:'Quad', price:'', currency:'', label:'', visible:true },
-               { id: uid(), roomType:'Triple', price:'', currency:'', label:'', visible:true },
-               { id: uid(), roomType:'Double', price:'', currency:'', label:'', visible:true } ]
+    pricing: [ 
+      { id: uid(), roomType:'Quad', price:'', currency:'', label:'', visible:true },
+      { id: uid(), roomType:'Triple', price:'', currency:'', label:'', visible:true },
+      { id: uid(), roomType:'Double', price:'', currency:'', label:'', visible:true }
+    ]
   };
 }
 function defaultServices(){
@@ -63,7 +60,7 @@ function defaultState(name){
     airline: { name:'', fullName:'', code:'', logo:'', primaryColor:'#0F5132', secondaryColor:'#1B2A4A' },
     header: { image:'', position:'center', height:150, overlayOpacity:0.35, show:true,
               title:'Umrah Package', subtitle:'Makkah · Madinah' },
-    packages: [ makePackage('Economy Package', '#0F5132'), makePackage('Premium Package', '#1B2A4A') ],
+    packages: [ makePackage('Economy Package', '#0F5132', 'Essential journey'), makePackage('Premium Package', '#1B2A4A', 'Elevated experience') ],
     flights: [],
     child: { price:'', label:'Child (without bed)', icon:'', show:true },
     infant: { price:'', label:'Infant (under 2 yrs)', icon:'', show:true },
@@ -88,6 +85,41 @@ function defaultState(name){
 let state = defaultState();
 let activeTab = 'general';
 let mobileEditorOpen = false;
+let currentZoom = 1;
+let galleryFilter = 'all';
+
+/* --------------- UNDO / REDO SYSTEM --------------- */
+const history = { stack: [], index: -1, maxSize: 50 };
+function pushHistory(){
+  const snapshot = JSON.stringify(state);
+  if (history.index >= 0 && history.stack[history.index] === snapshot) return;
+  history.stack = history.stack.slice(0, history.index + 1);
+  history.stack.push(snapshot);
+  if (history.stack.length > history.maxSize) history.stack.shift();
+  history.index = history.stack.length - 1;
+  updateUndoRedoButtons();
+}
+function undo(){
+  if (history.index <= 0) return;
+  history.index--;
+  state = JSON.parse(history.stack[history.index]);
+  renderAll(); renderEditorTabs(); renderEditorBody();
+  updateUndoRedoButtons();
+  toast('Undone', '');
+}
+function redo(){
+  if (history.index >= history.stack.length - 1) return;
+  history.index++;
+  state = JSON.parse(history.stack[history.index]);
+  renderAll(); renderEditorTabs(); renderEditorBody();
+  updateUndoRedoButtons();
+  toast('Redone', '');
+}
+function updateUndoRedoButtons(){
+  const u = $('#btnUndo'), r = $('#btnRedo');
+  if (u) u.disabled = history.index <= 0;
+  if (r) r.disabled = history.index >= history.stack.length - 1;
+}
 
 /* ------------------- 3. PERSISTENCE + PACKAGE LIBRARY ------------------ */
 const LIB_KEY = 'umrah_studio_library_v1';
@@ -104,12 +136,18 @@ function saveCurrentToLibrary(showToast=true){
   state.modified = Date.now();
   let lib = getLibrary();
   const idx = lib.findIndex(p => p.id === state.id);
-  const entry = { id: state.id, name: state.general.packageName || 'Untitled Package', modified: state.modified, state: JSON.parse(JSON.stringify(state)) };
+  const entry = { 
+    id: state.id, 
+    name: state.general.packageName || 'Untitled Package', 
+    modified: state.modified, 
+    preset: state.theme.preset || 'Custom',
+    state: JSON.parse(JSON.stringify(state)) 
+  };
   if (idx >= 0) lib[idx] = entry; else lib.push(entry);
   setLibrary(lib);
   localStorage.setItem(CURRENT_KEY, JSON.stringify(state));
   setTimeout(() => setAutosave('saved'), 260);
-  if (showToast) toast('Package saved', 'success');
+  if (showToast) toast('✓ Package saved', 'success');
 }
 const autosave = debounce(() => saveCurrentToLibrary(false), 900);
 
@@ -123,9 +161,15 @@ function setAutosave(mode){
 function loadPackageById(id){
   const lib = getLibrary();
   const found = lib.find(p => p.id === id);
-  if (found){ state = JSON.parse(JSON.stringify(found.state)); openStudio(); }
+  if (found){ 
+    state = JSON.parse(JSON.stringify(found.state)); 
+    history.stack = []; history.index = -1;
+    pushHistory();
+    openStudio(); 
+  }
 }
 function deletePackageById(id){
+  if (!confirm('Delete this saved package? This cannot be undone.')) return;
   setLibrary(getLibrary().filter(p => p.id !== id));
   renderLibraryList();
   toast('Package deleted', 'success');
@@ -135,12 +179,26 @@ function duplicatePackageById(id){
   const found = lib.find(p => p.id === id);
   if (!found) return;
   const copy = JSON.parse(JSON.stringify(found.state));
-  copy.id = uid(); copy.general.packageName = (copy.general.packageName || 'Package') + ' (Copy)';
+  copy.id = uid(); 
+  copy.general.packageName = (copy.general.packageName || 'Package') + ' (Copy)';
   copy.modified = Date.now();
-  lib.push({ id: copy.id, name: copy.general.packageName, modified: copy.modified, state: copy });
+  lib.push({ id: copy.id, name: copy.general.packageName, modified: copy.modified, preset: copy.theme?.preset || 'Custom', state: copy });
   setLibrary(lib);
   renderLibraryList();
-  toast('Package duplicated', 'success');
+  toast('✓ Package duplicated', 'success');
+}
+function renamePackageById(id){
+  const lib = getLibrary();
+  const found = lib.find(p => p.id === id);
+  if (!found) return;
+  const newName = prompt('Rename package:', found.name);
+  if (!newName || newName === found.name) return;
+  found.name = newName;
+  found.state.general.packageName = newName;
+  found.modified = Date.now();
+  setLibrary(lib);
+  renderLibraryList();
+  toast('✓ Renamed', 'success');
 }
 
 /* ------------------------- 4. THEME PRESETS ----------------------------- */
@@ -153,10 +211,17 @@ const THEME_PRESETS = {
   'Modern':        { primary:'#1E1E1E', secondary:'#4A4A4A', accent:'#D97757', background:'#FFFFFF' },
   'Minimal':       { primary:'#23201A', secondary:'#6B665A', accent:'#23201A', background:'#FFFFFF' },
   'Ramadan':       { primary:'#0A3A24', secondary:'#B8892E', accent:'#F3D27A', background:'#0F241B' },
-  'Premium Umrah': { primary:'#0F5132', secondary:'#B8892E', accent:'#1B2A4A', background:'#FDFBF5' }
+  'Premium Umrah': { primary:'#0F5132', secondary:'#B8892E', accent:'#1B2A4A', background:'#FDFBF5' },
+  'Desert Sand':   { primary:'#8B6914', secondary:'#5C4A1E', accent:'#D4A843', background:'#FDF8ED' },
+  'Ocean Breeze':  { primary:'#0C4A6E', secondary:'#0369A1', accent:'#38BDF8', background:'#F0F9FF' },
+  'Rose Gold':     { primary:'#9F1239', secondary:'#BE123C', accent:'#FDA4AF', background:'#FFF1F2' },
+  'Midnight':      { primary:'#0F172A', secondary:'#1E293B', accent:'#94A3B8', background:'#F8FAFC' },
+  'Forest':        { primary:'#166534', secondary:'#15803D', accent:'#86EFAC', background:'#F0FDF4' },
+  'Burgundy':      { primary:'#7F1D1D', secondary:'#991B1B', accent:'#FCA5A5', background:'#FEF2F2' },
+  'Teal':          { primary:'#134E4A', secondary:'#0F766E', accent:'#5EEAD4', background:'#F0FDFA' }
 };
 const FONT_OPTIONS = ['Fraunces','Playfair Display','Work Sans','Inter','Poppins','Merriweather','Montserrat','Cormorant Garamond'];
-const loadedFonts = new Set(['Fraunces','Work Sans']);
+const loadedFonts = new Set(['Fraunces','Work Sans','Playfair Display','Cormorant Garamond','Inter','Poppins','Montserrat']);
 function ensureFontLoaded(family){
   if (loadedFonts.has(family)) return;
   const link = document.createElement('link');
@@ -169,7 +234,8 @@ function applyPreset(name){
   const p = THEME_PRESETS[name];
   if (!p) return;
   Object.assign(state.theme, p, { preset: name });
-  renderAll(); autosave();
+  renderAll(); autosave(); pushHistory();
+  toast(`Applied "${name}" theme`, 'success');
 }
 
 /* ------------------------- 5. ICON LIBRARY (SVG) ------------------------ */
@@ -213,7 +279,7 @@ function toast(msg, type=''){
 }
 
 /* --------------------------- IMAGE HANDLING ------------------------------ */
-function resizeImageFile(file, maxDim=900, quality=0.82){
+function resizeImageFile(file, maxDim=1200, quality=0.85){
   return new Promise((resolve, reject) => {
     const validTypes = ['image/png','image/jpeg','image/jpg','image/webp','image/svg+xml'];
     if (!validTypes.includes(file.type)){ reject(new Error('Unsupported file type. Use PNG, JPG, WEBP or SVG.')); return; }
@@ -246,44 +312,104 @@ function resizeImageFile(file, maxDim=900, quality=0.82){
   });
 }
 function bindUpload(inputEl, onLoaded){
+  if (!inputEl) return;
   inputEl.addEventListener('change', async (e) => {
     const file = e.target.files[0];
     if (!file) return;
-    try { const dataUrl = await resizeImageFile(file); onLoaded(dataUrl); }
+    try { 
+      const dataUrl = await resizeImageFile(file); 
+      onLoaded(dataUrl); 
+      pushHistory();
+    }
     catch(err){ toast(err.message || 'Upload failed', 'error'); }
   });
 }
 
 /* ============================ 7. GALLERY ================================ */
 const TEMPLATE_DEFS = [
-  { key:'classic', name:'Classic Umrah', desc:'Green & warm, traditional layout', preset:'Classic Green' },
-  { key:'luxury', name:'Luxury Gold', desc:'Premium gold accents', preset:'Luxury Gold' },
-  { key:'airline', name:'Airline Style', desc:'Bold navy, airline-branded', preset:'Royal Blue' },
-  { key:'minimal', name:'Minimal', desc:'Clean, typography-led', preset:'Minimal' }
+  // Classic
+  { key:'classic-green', name:'Classic Green', desc:'Traditional Islamic design with emerald tones', preset:'Classic Green', category:'classic', tags:['Popular','Traditional'] },
+  { key:'classic-emerald', name:'Emerald Elegance', desc:'Deep emerald with gold accents', preset:'Emerald', category:'classic', tags:['Elegant'] },
+  { key:'classic-forest', name:'Forest Serenity', desc:'Natural green tones for a calm feel', preset:'Forest', category:'classic', tags:['Nature'] },
+  { key:'classic-teal', name:'Teal Tranquility', desc:'Modern teal with soft accents', preset:'Teal', category:'classic', tags:['Fresh'] },
+  
+  // Luxury
+  { key:'luxury-gold', name:'Luxury Gold', desc:'Premium gold and dark brown palette', preset:'Luxury Gold', category:'luxury', tags:['Premium','Gold'] },
+  { key:'luxury-rose', name:'Rose Gold Luxe', desc:'Elegant rose gold and cream', preset:'Rose Gold', category:'luxury', tags:['Feminine','Elegant'] },
+  { key:'luxury-burgundy', name:'Burgundy Royale', desc:'Rich burgundy for a regal feel', preset:'Burgundy', category:'luxury', tags:['Royal'] },
+  { key:'luxury-desert', name:'Desert Sand', desc:'Warm sand tones inspired by Arabia', preset:'Desert Sand', category:'luxury', tags:['Warm'] },
+  
+  // Modern
+  { key:'modern-midnight', name:'Midnight Modern', desc:'Sleek dark mode design', preset:'Midnight', category:'modern', tags:['Dark','Sleek'] },
+  { key:'modern-ocean', name:'Ocean Breeze', desc:'Cool blue modern aesthetic', preset:'Ocean Breeze', category:'modern', tags:['Cool'] },
+  { key:'modern-premium', name:'Premium Umrah', desc:'Contemporary with gold accents', preset:'Premium Umrah', category:'modern', tags:['Premium'] },
+  { key:'modern-royal', name:'Royal Blue Modern', desc:'Bold navy with clean lines', preset:'Royal Blue', category:'modern', tags:['Bold'] },
+  
+  // Minimal
+  { key:'minimal-white', name:'Pure Minimal', desc:'Clean white with black typography', preset:'Minimal', category:'minimal', tags:['Clean'] },
+  { key:'minimal-modern', name:'Modern Minimal', desc:'Simple and sophisticated', preset:'Modern', category:'minimal', tags:['Simple'] },
+  
+  // Seasonal
+  { key:'seasonal-ramadan', name:'Ramadan Special', desc:'Dark theme with golden crescent accents', preset:'Ramadan', category:'seasonal', tags:['Ramadan','Special'] },
+  { key:'seasonal-hajj', name:'Hajj Season', desc:'Traditional Hajj colors', preset:'Classic Green', category:'seasonal', tags:['Hajj'] },
+  
+  // Airline
+  { key:'airline-saudia', name:'Saudia Style', desc:'Inspired by Saudia airlines', preset:'Emerald', category:'airline', tags:['Airline'] },
+  { key:'airline-emirates', name:'Emirates Style', desc:'Red and gold airline aesthetic', preset:'Burgundy', category:'airline', tags:['Airline'] },
+  { key:'airline-qatar', name:'Qatar Airways Style', desc:'Burgundy and grey premium', preset:'Burgundy', category:'airline', tags:['Airline'] },
+  { key:'airline-emirates-blue', name:'Emirates Blue', desc:'Blue and gold airline style', preset:'Royal Blue', category:'airline', tags:['Airline'] },
+  
+  // Extra
+  { key:'extra-green-blue', name:'Green & Blue', desc:'Dual-tone classic combination', preset:'Green & Blue', category:'classic', tags:['Dual-tone'] },
+  { key:'extra-forest-gold', name:'Forest & Gold', desc:'Nature meets luxury', preset:'Forest', category:'luxury', tags:['Nature','Gold'] },
+  { key:'extra-ocean-gold', name:'Ocean & Gold', desc:'Cool blue with warm accents', preset:'Ocean Breeze', category:'modern', tags:['Contrast'] },
+  { key:'extra-midnight-gold', name:'Midnight Gold', desc:'Dark elegance with gold', preset:'Midnight', category:'luxury', tags:['Dark','Gold'] }
 ];
+
 function renderGalleryCards(){
   const grid = $('#galleryGrid');
-  grid.innerHTML = TEMPLATE_DEFS.map(t => {
+  const filtered = galleryFilter === 'all' ? TEMPLATE_DEFS : TEMPLATE_DEFS.filter(t => t.category === galleryFilter);
+  
+  if (!filtered.length){
+    grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1;"><h3>No templates found</h3><p>Try a different filter</p></div>';
+    return;
+  }
+  
+  grid.innerHTML = filtered.map(t => {
     const p = THEME_PRESETS[t.preset];
-    return `<button class="gallery-card" data-preset="${t.preset}">
+    return `<button class="gallery-card" data-preset="${t.preset}" data-key="${t.key}">
       <div class="gallery-card-thumb" style="background:${p.background}">
-        <span class="mini-badge" style="color:${p.primary}">TEMPLATE</span>
-        <svg width="70%" viewBox="0 0 100 60" style="opacity:.9">
-          <rect x="4" y="6" width="92" height="16" rx="3" fill="${p.primary}"/>
-          <rect x="4" y="26" width="44" height="28" rx="3" fill="${p.primary}" opacity=".85"/>
-          <rect x="52" y="26" width="44" height="28" rx="3" fill="${p.secondary}" opacity=".85"/>
-          <rect x="8" y="34" width="36" height="6" rx="2" fill="#fff" opacity=".7"/>
-          <rect x="56" y="34" width="36" height="6" rx="2" fill="#fff" opacity=".7"/>
-        </svg>
+        <span class="mini-badge" style="color:${p.primary}">${t.category}</span>
+        <div class="template-preview">
+          <div class="template-preview-bar" style="background:${p.primary};height:18px;"></div>
+          <div class="template-preview-card">
+            <div style="background:${p.primary};opacity:.85;"></div>
+            <div style="background:${p.secondary};opacity:.85;"></div>
+          </div>
+          <div class="template-preview-card" style="height:24px;">
+            <div style="background:${p.primary};opacity:.3;"></div>
+            <div style="background:${p.secondary};opacity:.3;"></div>
+            <div style="background:${p.primary};opacity:.3;"></div>
+          </div>
+          <div class="template-preview-bar" style="background:${p.accent};height:6px;margin-top:auto;"></div>
+        </div>
       </div>
-      <div class="gallery-card-body"><h3>${t.name}</h3><span>${t.desc}</span></div>
+      <div class="gallery-card-body">
+        <h3>${t.name}</h3>
+        <span>${t.desc}</span>
+        <div class="card-tags">${t.tags.map(tag => `<span class="card-tag">${tag}</span>`).join('')}</div>
+      </div>
     </button>`;
   }).join('');
+  
   $$('.gallery-card', grid).forEach(card => {
     card.addEventListener('click', () => {
       state = defaultState();
       applyPresetOnFreshState(card.dataset.preset);
+      history.stack = []; history.index = -1;
+      pushHistory();
       openStudio();
+      toast(`Starting with "${card.querySelector('h3').textContent}" template`, 'success');
     });
   });
 }
@@ -295,24 +421,29 @@ function renderLibraryList(){
   const lib = getLibrary().sort((a,b) => b.modified - a.modified);
   $('#libraryCount').textContent = lib.length ? `${lib.length} saved` : '';
   const host = $('#libraryList');
-  if (!lib.length){ host.innerHTML = '<div class="lib-empty">No saved packages yet — create one from a template above.</div>'; return; }
+  if (!lib.length){ 
+    host.innerHTML = '<div class="lib-empty">No saved packages yet — create one from a template above.</div>'; 
+    return; 
+  }
   host.innerHTML = lib.map(p => `
     <div class="lib-item" data-id="${p.id}">
       <div class="lib-item-info">
         <b>${escapeHtml(p.name)}</b>
-        <span>${new Date(p.modified).toLocaleDateString()} ${new Date(p.modified).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})}</span>
+        <span>${new Date(p.modified).toLocaleDateString()} · ${p.preset || 'Custom'}</span>
       </div>
       <div class="lib-item-actions">
-        <button data-act="edit">Edit</button>
-        <button data-act="dup">Duplicate</button>
-        <button data-act="del">Delete</button>
+        <button data-act="edit">✏️ Edit</button>
+        <button data-act="rename">Rename</button>
+        <button data-act="dup">📋 Copy</button>
+        <button data-act="del">🗑️</button>
       </div>
     </div>`).join('');
   $$('.lib-item', host).forEach(row => {
     const id = row.dataset.id;
     row.querySelector('[data-act=edit]').addEventListener('click', () => loadPackageById(id));
+    row.querySelector('[data-act=rename]').addEventListener('click', () => renamePackageById(id));
     row.querySelector('[data-act=dup]').addEventListener('click', () => duplicatePackageById(id));
-    row.querySelector('[data-act=del]').addEventListener('click', () => { if (confirm('Delete this saved package?')) deletePackageById(id); });
+    row.querySelector('[data-act=del]').addEventListener('click', () => deletePackageById(id));
   });
 }
 function openGallery(){
@@ -328,6 +459,8 @@ function openStudio(){
   renderEditorTabs();
   renderEditorBody();
   renderAll();
+  applyPageSize();
+  pushHistory();
 }
 
 /* ============================ 8. EDITOR ================================= */
@@ -350,7 +483,7 @@ function uploadBox(id, currentValue, label){
   return `<div class="field"><label>${label}</label>
     <div class="upload-box" id="${id}_box">
       ${currentValue ? `<img src="${currentValue}" />` : ''}
-      <div>${currentValue ? 'Replace image' : 'Click or drop to upload (PNG, JPG, WEBP, SVG)'}</div>
+      <div>${currentValue ? 'Click to replace' : 'Click or drop to upload'}</div>
       <input type="file" id="${id}" accept=".png,.jpg,.jpeg,.webp,.svg" />
     </div></div>`;
 }
@@ -372,7 +505,11 @@ function renderEditorBody(){
   }
 }
 
-function onChange(){ renderAll(); autosave(); }
+function onChange(){ 
+  renderAll(); 
+  autosave(); 
+  pushHistory();
+}
 
 /* ---- GENERAL ---- */
 function tplGeneral(){
@@ -398,7 +535,11 @@ function tplGeneral(){
 function bindGeneral(){
   const map = { g_name:'packageName', g_subtitle:'subtitle', g_duration:'duration', g_nights:'nights', g_dates:'travelDates', g_month:'travelMonth', g_hijri:'hijriMonth', g_currency:'currency', g_status:'status' };
   Object.entries(map).forEach(([id,key]) => {
-    $('#'+id).addEventListener('input', e => { state.general[key] = e.target.value; if(id==='g_name'){ $('#packageNameTop').value = e.target.value; } onChange(); });
+    $('#'+id).addEventListener('input', e => { 
+      state.general[key] = e.target.value; 
+      if(id==='g_name'){ $('#packageNameTop').value = e.target.value; } 
+      onChange(); 
+    });
   });
 }
 
@@ -448,7 +589,7 @@ function bindHeader(){
   bindUpload($('#h_image'), dataUrl => { state.header.image = dataUrl; renderEditorBody(); onChange(); });
 }
 
-/* ---- PACKAGES (incl. hotels + pricing) ---- */
+/* ---- PACKAGES ---- */
 function tplPackages(){
   const ci = `<div class="field-group"><h4>Child &amp; Infant Pricing</h4>
     <div class="checkbox-row"><input type="checkbox" id="ci_show" ${state.child.show?'checked':''}><label>Show child / infant section</label></div>
@@ -758,7 +899,7 @@ function tplMedia(){
     <div class="empty-hint">Uploads made in other tabs appear here for a quick overview. Replace or remove them from their original section.</div>
     ${categories.map(([label, imgs]) => `
       <div style="margin-bottom:16px;">
-        <div style="font-size:12.5px;font-weight:600;margin-bottom:6px;">${label}</div>
+        <div style="font-size:12.5px;font-weight:600;margin-bottom:6px;">${label} (${imgs.length})</div>
         ${imgs.length ? `<div style="display:flex;gap:8px;flex-wrap:wrap;">${imgs.map(i=>`<img src="${i}" style="width:56px;height:56px;object-fit:cover;border-radius:6px;border:1px solid var(--line);">`).join('')}</div>` : `<div class="empty-hint">None uploaded</div>`}
       </div>`).join('')}
   </div>`;
@@ -769,7 +910,7 @@ function tplTheme(){
   const t = state.theme;
   return `<div class="field-group"><h4>Presets</h4>
     <div class="preset-swatches">${Object.entries(THEME_PRESETS).map(([name,p]) => `
-      <button class="preset-swatch" data-preset="${name}"><span class="preset-dot" style="background:${p.primary}"></span>${name}</button>`).join('')}</div>
+      <button class="preset-swatch ${t.preset===name?'active':''}" data-preset="${name}"><span class="preset-dot" style="background:${p.primary}"></span>${name}</button>`).join('')}</div>
   </div>
   <div class="field-group"><h4>Colors</h4>
     <div class="field-row">${field('Primary', `<input type="color" id="t_primary" value="${t.primary}">`)}${field('Secondary', `<input type="color" id="t_secondary" value="${t.secondary}">`)}</div>
@@ -986,34 +1127,63 @@ function renderAll(){
 
 /* ======================= 10. TOOLBAR ACTIONS ========================= */
 function wireToolbar(){
-  $('#btnBack').addEventListener('click', () => openGallery());
+  $('#btnBack').addEventListener('click', () => {
+    saveCurrentToLibrary(false);
+    openGallery();
+  });
   $('#packageNameTop').addEventListener('input', e => { state.general.packageName = e.target.value; onChange(); });
 
   $('#btnNew').addEventListener('click', () => {
-    if (!confirm('Start a new blank package? Unsaved changes to the current package are kept in autosave.')) return;
-    state = defaultState(); openStudio(); toast('New package started', 'success');
+    if (!confirm('Start a new blank package?')) return;
+    saveCurrentToLibrary(false);
+    state = defaultState(); 
+    history.stack = []; history.index = -1;
+    pushHistory();
+    openStudio(); 
+    toast('New package started', 'success');
   });
+  
   $('#btnSave').addEventListener('click', () => saveCurrentToLibrary(true));
+  
   $('#btnDuplicate').addEventListener('click', () => {
     saveCurrentToLibrary(false);
     const copy = JSON.parse(JSON.stringify(state));
-    copy.id = uid(); copy.general.packageName += ' (Copy)';
-    state = copy; saveCurrentToLibrary(false); openStudio();
+    copy.id = uid(); 
+    copy.general.packageName += ' (Copy)';
+    state = copy; 
+    history.stack = []; history.index = -1;
+    pushHistory();
+    saveCurrentToLibrary(false); 
+    openStudio();
     toast('Duplicated as new package', 'success');
   });
+  
   $('#btnPreviewToggle').addEventListener('click', () => {
     document.body.classList.toggle('preview-only');
-    $('#editorPanel').classList.toggle('hidden');
   });
+  
   $('#btnReset').addEventListener('click', () => {
     if (!confirm('Reset this package to a blank template? This cannot be undone.')) return;
     const name = state.general.packageName;
-    state = defaultState(name); renderEditorTabs(); renderEditorBody(); renderAll(); autosave();
+    state = defaultState(name); 
+    history.stack = []; history.index = -1;
+    pushHistory();
+    renderEditorTabs(); 
+    renderEditorBody(); 
+    renderAll(); 
+    autosave();
     toast('Package reset', 'success');
   });
 
-  $('#btnExportMenu').addEventListener('click', (e) => { e.stopPropagation(); $('#exportMenu').classList.toggle('hidden'); });
-  document.addEventListener('click', () => $('#exportMenu').classList.add('hidden'));
+  $('#btnUndo').addEventListener('click', undo);
+  $('#btnRedo').addEventListener('click', redo);
+
+  $('#btnExportMenu').addEventListener('click', (e) => { 
+    e.stopPropagation(); 
+    $('#exportMenu').classList.toggle('hidden'); 
+  });
+  document.addEventListener('click', () => $('#exportMenu')?.classList.add('hidden'));
+  
   $$('#exportMenu button').forEach(b => b.addEventListener('click', () => {
     $('#exportMenu').classList.add('hidden');
     const action = b.dataset.action;
@@ -1021,6 +1191,7 @@ function wireToolbar(){
     else if (action === 'pdf') exportPDF();
     else if (action === 'png') exportImage('png');
     else if (action === 'jpg') exportImage('jpeg');
+    else if (action === 'json') exportJSON();
   }));
 
   $('#drawerToggle').addEventListener('click', () => {
@@ -1035,12 +1206,61 @@ function wireToolbar(){
 
   $('#btnPrintPreview').addEventListener('click', openPrintPreview);
   $('#closePrintModal').addEventListener('click', () => $('#printModal').classList.add('hidden'));
+  $('#closePrintModal2').addEventListener('click', () => $('#printModal').classList.add('hidden'));
   $('#doActualPrint').addEventListener('click', () => window.print());
+
+  // Zoom controls
+  $('#btnZoomIn').addEventListener('click', () => setZoom(currentZoom + 0.1));
+  $('#btnZoomOut').addEventListener('click', () => setZoom(currentZoom - 0.1));
+  $('#btnZoomFit').addEventListener('click', () => {
+    currentZoom = 0.6;
+    setZoom(0.6);
+  });
+
+  // Gallery filters
+  $$('.filter-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      $$('.filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      galleryFilter = btn.dataset.filter;
+      renderGalleryCards();
+    });
+  });
+
+  // Import/Export
+  $('#createFromScratch').addEventListener('click', () => {
+    state = defaultState('Untitled Package'); 
+    history.stack = []; history.index = -1;
+    pushHistory();
+    openStudio();
+  });
+  
+  $('#importPackageBtn').addEventListener('click', () => $('#importFileInput').click());
+  $('#importFileInput').addEventListener('change', importJSON);
+
+  // Keyboard shortcuts
+  document.addEventListener('keydown', (e) => {
+    if (e.ctrlKey || e.metaKey) {
+      if (e.key === 'z' && !e.shiftKey) { e.preventDefault(); undo(); }
+      else if (e.key === 'y' || (e.key === 'z' && e.shiftKey)) { e.preventDefault(); redo(); }
+      else if (e.key === 's') { e.preventDefault(); saveCurrentToLibrary(true); }
+      else if (e.key === 'p') { e.preventDefault(); openPrintPreview(); }
+    }
+  });
+}
+
+function setZoom(level){
+  currentZoom = clamp(level, 0.3, 2);
+  const poster = $('#poster');
+  poster.style.transform = `scale(${currentZoom})`;
+  poster.style.transformOrigin = 'top center';
+  $('#zoomLevel').textContent = Math.round(currentZoom * 100) + '%';
 }
 
 const PAGE_SIZES = {
   a4p: { w: 794, h: 1123 }, a4l: { w: 1123, h: 794 }, a3: { w: 1123, h: 1587 },
-  '1080x1350': { w: 1080, h: 1350 }, '1080x1920': { w: 1080, h: 1920 }
+  '1080x1350': { w: 1080, h: 1350 }, '1080x1920': { w: 1080, h: 1920 },
+  '1200x628': { w: 1200, h: 628 }
 };
 function applyPageSize(){
   const sel = $('#pageSize').value;
@@ -1060,7 +1280,7 @@ function validateBeforeExport(){
   if (!state.general.packageName?.trim()) errs.push('Package name is empty.');
   state.packages.forEach((p,i) => { if (!p.title?.trim()) errs.push(`Package ${i+1} has no title.`); });
   if (errs.length){ errs.forEach(e => toast(e, 'error')); }
-  return true; // warn but never block export
+  return true;
 }
 function openPrintPreview(){
   validateBeforeExport();
@@ -1069,6 +1289,7 @@ function openPrintPreview(){
   applyThemeVars(frame.firstElementChild);
   frame.firstElementChild.style.width = '794px';
   frame.firstElementChild.style.minHeight = '1123px';
+  frame.firstElementChild.style.transform = 'none';
   $('#printModal').classList.remove('hidden');
 }
 async function exportImage(type){
@@ -1101,10 +1322,34 @@ async function exportPDF(){
     toast('PDF exported', 'success');
   } catch(err){ toast('PDF export failed: ' + err.message, 'error'); }
 }
+function exportJSON(){
+  const data = JSON.stringify(state, null, 2);
+  download(`${(state.general.packageName||'umrah-package').replace(/\s+/g,'-').toLowerCase()}.json`, data);
+  toast('JSON exported', 'success');
+}
+function importJSON(e){
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    try {
+      const imported = JSON.parse(ev.target.result);
+      if (!imported.general || !imported.packages) throw new Error('Invalid package file');
+      imported.id = uid();
+      imported.modified = Date.now();
+      state = imported;
+      history.stack = []; history.index = -1;
+      pushHistory();
+      openStudio();
+      toast('Package imported', 'success');
+    } catch(err){ toast('Import failed: ' + err.message, 'error'); }
+  };
+  reader.readAsText(file);
+  e.target.value = '';
+}
 
 /* ============================== 12. INIT =============================== */
 function init(){
-  $('#createCustomBtn').addEventListener('click', () => { state = defaultState('Untitled Package'); openStudio(); });
   wireToolbar();
 
   const saved = localStorage.getItem(CURRENT_KEY);
