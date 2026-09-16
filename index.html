@@ -3,10 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Umrah Package Studio — Professional Design Tool</title>
+<title>Umrah Package Design Studio</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Work+Sans:wght@400;500;600;700;800&family=Playfair+Display:wght@400;500;600;700&family=Cormorant+Garamond:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Poppins:wght@400;500;600;700&family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Work+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -15,34 +14,16 @@
 <div id="gallery" class="gallery">
   <div class="gallery-inner">
     <div class="gallery-head">
-      <span class="gallery-kicker">✦ Umrah Package Studio</span>
-      <h1>Create stunning Umrah package designs in minutes</h1>
-      <p>Choose from {TEMPLATE_COUNT}+ professionally designed templates, then customize every detail — colors, hotels, pricing, and more.</p>
-      
-      <div class="gallery-actions">
-        <button class="gallery-primary-btn" id="createFromScratch">Start from scratch</button>
-        <button class="gallery-secondary-btn" id="importPackageBtn">📁 Import package</button>
-        <input type="file" id="importFileInput" accept=".json" hidden>
-      </div>
+      <span class="gallery-kicker">Umrah Package Design Studio</span>
+      <h1>10 professional layouts. One set of package data.</h1>
+      <p>Pick a design to start, then customize every detail. Switch designs anytime — your data always stays.</p>
     </div>
-    
-    <div class="gallery-filters">
-      <button class="filter-btn active" data-filter="all">All Templates</button>
-      <button class="filter-btn" data-filter="classic">Classic</button>
-      <button class="filter-btn" data-filter="luxury">Luxury</button>
-      <button class="filter-btn" data-filter="modern">Modern</button>
-      <button class="filter-btn" data-filter="minimal">Minimal</button>
-      <button class="filter-btn" data-filter="seasonal">Seasonal</button>
-      <button class="filter-btn" data-filter="airline">Airline</button>
-    </div>
-    
+    <div class="filter-bar" id="galleryFilters"></div>
     <div class="gallery-grid" id="galleryGrid"></div>
+    <button class="gallery-custom-btn" id="createCustomBtn">+ Start blank (choose design later)</button>
 
     <div class="gallery-library">
-      <div class="gallery-library-head">
-        <h2>📦 Your saved packages</h2>
-        <span id="libraryCount" class="muted-tag"></span>
-      </div>
+      <div class="gallery-library-head"><h2>Saved packages</h2><span id="libraryCount" class="muted-tag"></span></div>
       <div class="gallery-library-list" id="libraryList"></div>
     </div>
   </div>
@@ -50,8 +31,6 @@
 
 <!-- ===================== MAIN STUDIO APP ===================== -->
 <div id="studio" class="studio hidden">
-
-  <!-- TOP TOOLBAR -->
   <header class="toolbar">
     <div class="toolbar-left">
       <button class="tb-btn tb-icon" id="btnBack" title="Back to templates">←</button>
@@ -59,102 +38,103 @@
       <span id="autosaveIndicator" class="autosave-indicator">Saved ✓</span>
     </div>
     <div class="toolbar-right">
-      <button class="tb-btn" id="btnUndo" title="Undo (Ctrl+Z)">↶ Undo</button>
-      <button class="tb-btn" id="btnRedo" title="Redo (Ctrl+Y)">↷ Redo</button>
-      <div class="tb-divider"></div>
       <button class="tb-btn" id="btnNew">New</button>
       <button class="tb-btn" id="btnSave">Save</button>
       <button class="tb-btn" id="btnDuplicate">Duplicate</button>
+      <button class="tb-btn" id="btnChangeDesign">Change Design</button>
       <button class="tb-btn" id="btnPreviewToggle">Preview</button>
-      <div class="tb-dropdown">
-        <button class="tb-btn tb-primary" id="btnExportMenu">Export ▾</button>
-        <div class="tb-dropdown-menu hidden" id="exportMenu">
-          <button data-action="print">🖨️ Print</button>
-          <button data-action="pdf">📄 Export PDF</button>
-          <button data-action="png">🖼️ Export PNG</button>
-          <button data-action="jpg">🖼️ Export JPG</button>
-          <button data-action="json">📦 Export JSON</button>
-        </div>
-      </div>
+      <button class="tb-btn" id="btnPrint">Print</button>
+      <button class="tb-btn tb-primary" id="btnExportCenter">Export ▾</button>
       <button class="tb-btn tb-danger" id="btnReset">Reset</button>
     </div>
   </header>
 
   <div class="app-body">
-    <!-- MOBILE DRAWER TOGGLE -->
     <button class="drawer-toggle" id="drawerToggle">Edit ✎</button>
 
-    <!-- LEFT EDITOR PANEL -->
     <aside class="editor" id="editorPanel">
       <nav class="editor-tabs" id="editorTabs"></nav>
       <div class="editor-body" id="editorBody"></div>
     </aside>
 
-    <!-- CENTER PREVIEW -->
     <main class="preview-wrap">
       <div class="preview-toolbar">
-        <div class="page-size-select">
-          <label for="pageSize">Export size</label>
-          <select id="pageSize">
-            <option value="a4p">A4 Portrait</option>
-            <option value="a4l">A4 Landscape</option>
-            <option value="a3">A3</option>
-            <option value="1080x1350">1080 × 1350 (Instagram)</option>
-            <option value="1080x1920">1080 × 1920 (Story)</option>
-            <option value="1200x628">1200 × 628 (Facebook)</option>
-            <option value="custom">Custom</option>
-          </select>
-          <div id="customSizeInputs" class="custom-size-inputs hidden">
-            <input type="number" id="customW" placeholder="W px" />
-            <input type="number" id="customH" placeholder="H px" />
-          </div>
-        </div>
-        <div class="preview-actions">
-          <button class="tb-btn" id="btnZoomOut" title="Zoom out">−</button>
-          <span id="zoomLevel" class="zoom-level">100%</span>
-          <button class="tb-btn" id="btnZoomIn" title="Zoom in">+</button>
-          <button class="tb-btn" id="btnZoomFit" title="Fit to screen">Fit</button>
+        <div class="zoom-controls">
+          <button class="tb-btn tb-icon" id="zoomOut">−</button>
+          <span id="zoomLabel" class="zoom-label">100%</span>
+          <button class="tb-btn tb-icon" id="zoomIn">+</button>
+          <button class="tb-btn" id="zoom100">100%</button>
+          <button class="tb-btn" id="zoomFit">Fit</button>
+          <button class="tb-btn" id="btnFullscreen">⛶ Fullscreen</button>
         </div>
         <button class="tb-btn" id="btnPrintPreview">Print Preview</button>
       </div>
       <div class="preview-scroll" id="previewScroll">
         <div class="poster-frame" id="posterFrame">
-          <div class="poster" id="poster"><!-- rendered by JS --></div>
+          <div class="poster tpl-royal-green" id="poster"></div>
         </div>
       </div>
     </main>
   </div>
 </div>
 
+<!-- CHOOSE / CHANGE TEMPLATE MODAL -->
+<div id="templateModal" class="modal hidden">
+  <div class="modal-inner tpl-modal-inner">
+    <div class="modal-head"><h3>Choose your design</h3><button class="modal-close" id="closeTemplateModal">✕</button></div>
+    <div class="tpl-modal-body">
+      <div class="filter-bar" id="templateModalFilters"></div>
+      <div class="gallery-grid" id="templateModalGrid"></div>
+    </div>
+  </div>
+</div>
+
+<!-- EXPORT CENTER MODAL -->
+<div id="exportModal" class="modal hidden">
+  <div class="modal-inner export-modal-inner">
+    <div class="modal-head"><h3>Export Package</h3><button class="modal-close" id="closeExportModal">✕</button></div>
+    <div class="export-modal-body">
+      <div class="export-col">
+        <h4>Format</h4>
+        <label class="radio-row"><input type="radio" name="exFormat" value="pdf"> PDF</label>
+        <label class="radio-row"><input type="radio" name="exFormat" value="png"> PNG</label>
+        <label class="radio-row"><input type="radio" name="exFormat" value="jpg"> JPG</label>
+        <h4 style="margin-top:16px;">Quality</h4>
+        <select id="exQuality"><option value="high">High</option><option value="medium">Medium</option></select>
+      </div>
+      <div class="export-col">
+        <h4>Size</h4>
+        <label class="radio-row"><input type="radio" name="exSize" value="a4p"> A4 Portrait</label>
+        <label class="radio-row"><input type="radio" name="exSize" value="a4l"> A4 Landscape</label>
+        <label class="radio-row"><input type="radio" name="exSize" value="a5p"> A5 Portrait</label>
+        <label class="radio-row"><input type="radio" name="exSize" value="a5l"> A5 Landscape</label>
+        <label class="radio-row"><input type="radio" name="exSize" value="igp"> Instagram Portrait</label>
+        <label class="radio-row"><input type="radio" name="exSize" value="igsq"> Instagram Square</label>
+        <label class="radio-row"><input type="radio" name="exSize" value="igstory"> Instagram Story</label>
+        <label class="radio-row"><input type="radio" name="exSize" value="wastatus"> WhatsApp Status</label>
+        <label class="radio-row"><input type="radio" name="exSize" value="wapost"> WhatsApp Post</label>
+        <label class="radio-row"><input type="radio" name="exSize" value="custom"> Custom</label>
+        <div class="custom-size-inputs" id="exCustomWrap"><input type="number" id="exCustomW" placeholder="W px"><input type="number" id="exCustomH" placeholder="H px"></div>
+      </div>
+    </div>
+    <div class="export-estimate" id="exEstimate"></div>
+    <div class="export-progress hidden" id="exProgress"></div>
+    <div class="modal-foot">
+      <button class="tb-btn" id="exPreviewBtn">Preview at this size</button>
+      <button class="tb-btn tb-primary" id="exExportBtn">Export</button>
+    </div>
+  </div>
+</div>
+
 <!-- PRINT PREVIEW MODAL -->
 <div id="printModal" class="modal hidden">
   <div class="modal-inner print-modal-inner">
-    <div class="modal-head">
-      <h3>🖨️ Print Preview — fits one A4 page</h3>
-      <button class="modal-close" id="closePrintModal">✕</button>
-    </div>
-    <div class="print-modal-body">
-      <div class="poster-frame a4-frame" id="printFrame"></div>
-    </div>
-    <div class="modal-foot">
-      <button class="tb-btn" id="closePrintModal2">Cancel</button>
-      <button class="tb-btn tb-primary" id="doActualPrint">🖨️ Print now</button>
-    </div>
+    <div class="modal-head"><h3>Print Preview — fits one A4 page</h3><button class="modal-close" id="closePrintModal">✕</button></div>
+    <div class="print-modal-body"><div class="poster-frame a4-frame" id="printFrame"></div></div>
+    <div class="modal-foot"><button class="tb-btn tb-primary" id="doActualPrint">Print now</button></div>
   </div>
 </div>
 
-<!-- TEMPLATE PICKER MODAL -->
-<div id="templateModal" class="modal hidden">
-  <div class="modal-inner template-modal-inner">
-    <div class="modal-head">
-      <h3>Choose a template</h3>
-      <button class="modal-close" id="closeTemplateModal">✕</button>
-    </div>
-    <div class="template-modal-body" id="templateModalBody"></div>
-  </div>
-</div>
-
-<!-- TOASTS -->
 <div id="toastHost" class="toast-host"></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
