@@ -1,323 +1,441 @@
 /* =========================================================
-   ENHANCED STYLES — Umrah Package Studio Pro
+   UMRAH PACKAGE DESIGN STUDIO — TOKENS
    ========================================================= */
+:root{
+  --bg: #FAF7F0; --ink:#201C16; --ink-soft:#5B5548; --paper:#FFFFFF; --line:#E6E0D2;
+  --emerald:#0F5132; --emerald-soft:#E6F0EA; --emerald-dark:#0A3A24;
+  --gold:#B8892E; --navy:#1C2B47; --danger:#A3402E;
+  --shadow-1:0 1px 2px rgba(32,28,22,.06); --shadow-2:0 8px 24px rgba(32,28,22,.10);
+  --font-ui:'Work Sans', -apple-system, sans-serif; --font-display:'Fraunces', Georgia, serif;
+  --radius-card:4px; --radius-pill:999px; --radius-btn:8px;
+}
+*{ box-sizing:border-box; }
+html,body{ margin:0; padding:0; }
+body{ font-family:var(--font-ui); color:var(--ink); background:var(--bg); -webkit-font-smoothing:antialiased; }
+button{ font-family:inherit; cursor:pointer; }
+input, select, textarea{ font-family:inherit; }
+.hidden{ display:none !important; }
+.muted-tag{ color:var(--ink-soft); font-size:13px; }
+button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible{ outline:2px solid var(--emerald); outline-offset:1px; }
 
-/* Gallery enhancements */
-.gallery-actions{
-  display: flex;
-  gap: 12px;
-  margin-bottom: 28px;
-  flex-wrap: wrap;
-}
-.gallery-primary-btn{
-  background: var(--emerald);
-  color: #fff;
-  border: none;
-  padding: 14px 28px;
-  border-radius: var(--radius-btn);
-  font-size: 15px;
-  font-weight: 600;
-  transition: all .2s;
-}
-.gallery-primary-btn:hover{
-  background: var(--emerald-dark);
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-2);
-}
-.gallery-secondary-btn{
-  background: var(--paper);
-  color: var(--ink);
-  border: 1.5px solid var(--line);
-  padding: 14px 24px;
-  border-radius: var(--radius-btn);
-  font-size: 15px;
-  font-weight: 500;
-  transition: all .2s;
-}
-.gallery-secondary-btn:hover{
-  border-color: var(--emerald);
-  color: var(--emerald);
-}
+/* =========================================================
+   FILTER BAR (gallery + template modal)
+   ========================================================= */
+.filter-bar{ display:flex; gap:8px; flex-wrap:wrap; margin: 18px 0 22px; }
+.filter-chip{ border:1px solid var(--line); background:var(--paper); color:var(--ink-soft); font-size:12.5px; font-weight:600; padding:7px 14px; border-radius:var(--radius-pill); }
+.filter-chip.active{ background:var(--emerald); border-color:var(--emerald); color:#fff; }
+.filter-chip:hover{ border-color:var(--emerald); }
 
-.gallery-filters{
-  display: flex;
-  gap: 8px;
-  margin-bottom: 24px;
-  flex-wrap: wrap;
-}
-.filter-btn{
-  background: var(--paper);
-  border: 1px solid var(--line);
-  padding: 8px 16px;
-  border-radius: var(--radius-pill);
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--ink-soft);
-  transition: all .15s;
-}
-.filter-btn:hover{
-  border-color: var(--emerald);
-  color: var(--emerald);
-}
-.filter-btn.active{
-  background: var(--emerald);
-  border-color: var(--emerald);
-  color: #fff;
-}
+/* =========================================================
+   GALLERY / TEMPLATE ENTRY SCREEN
+   ========================================================= */
+.gallery{ min-height:100vh; background: radial-gradient(1200px 600px at 80% -10%, var(--emerald-soft), transparent 60%), var(--bg); padding:56px 24px 80px; }
+.gallery-inner{ max-width:1120px; margin:0 auto; }
+.gallery-kicker{ font-size:13px; letter-spacing:.04em; color:var(--emerald); font-weight:600; }
+.gallery-head h1{ font-family:var(--font-display); font-size:clamp(26px,4vw,40px); font-weight:600; margin:10px 0 8px; max-width:680px; line-height:1.15; }
+.gallery-head p{ color:var(--ink-soft); max-width:520px; margin:0; font-size:15px; }
+.gallery-grid{ display:grid; grid-template-columns: repeat(4, 1fr); gap:18px; }
+.gallery-custom-btn{ margin-top:20px; background:none; border:1.5px dashed var(--line); color:var(--ink-soft); padding:14px; width:100%; border-radius:var(--radius-card); font-size:14px; transition:border-color .15s,color .15s; }
+.gallery-custom-btn:hover{ border-color:var(--emerald); color:var(--emerald); }
+.gallery-library{ margin-top:56px; }
+.gallery-library-head{ display:flex; align-items:baseline; gap:10px; margin-bottom:14px; }
+.gallery-library-head h2{ font-size:16px; font-weight:600; margin:0; }
+.gallery-library-list{ display:grid; grid-template-columns: repeat(3,1fr); gap:12px; }
+.lib-item{ background:var(--paper); border:1px solid var(--line); border-radius:var(--radius-card); padding:12px 14px; display:flex; align-items:center; justify-content:space-between; gap:10px; }
+.lib-item-info{ overflow:hidden; } .lib-item-info b{ display:block; font-size:14px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.lib-item-info span{ font-size:12px; color:var(--ink-soft); }
+.lib-item-actions{ display:flex; gap:6px; flex-shrink:0; }
+.lib-item-actions button{ border:1px solid var(--line); background:var(--paper); border-radius:6px; font-size:11px; padding:5px 8px; color:var(--ink-soft); }
+.lib-item-actions button:hover{ border-color:var(--emerald); color:var(--emerald); }
+.lib-empty{ color:var(--ink-soft); font-size:13px; grid-column:1/-1; }
 
-/* Enhanced gallery grid */
-.gallery-grid{
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 20px;
-}
-.gallery-card{
-  background: var(--paper);
-  border: 1px solid var(--line);
-  border-radius: 10px;
-  overflow: hidden;
-  cursor: pointer;
-  transition: all .2s ease;
-  text-align: left;
-  padding: 0;
-  position: relative;
-}
-.gallery-card:hover{
-  transform: translateY(-4px);
-  box-shadow: 0 12px 32px rgba(32,28,22,.14);
-  border-color: var(--emerald);
-}
-.gallery-card-thumb{
-  height: 170px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-  overflow: hidden;
-}
-.gallery-card-thumb .mini-badge{
-  position: absolute;
-  top: 10px;
-  left: 10px;
-  font-size: 9px;
-  letter-spacing: .06em;
-  background: rgba(255,255,255,.92);
-  padding: 4px 10px;
-  border-radius: var(--radius-pill);
-  font-weight: 700;
-  text-transform: uppercase;
-}
-.gallery-card-thumb .template-preview{
-  width: 100%;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  padding: 16px;
-  gap: 8px;
-}
-.gallery-card-body{
-  padding: 14px 16px 18px;
-  border-top: 1px solid var(--line);
-}
-.gallery-card-body h3{
-  margin: 0 0 4px;
-  font-size: 15px;
-  font-weight: 600;
-}
-.gallery-card-body span{
-  font-size: 12.5px;
-  color: var(--ink-soft);
-  display: block;
-  line-height: 1.4;
-}
-.gallery-card-body .card-tags{
-  display: flex;
-  gap: 6px;
-  margin-top: 10px;
-  flex-wrap: wrap;
-}
-.card-tag{
-  font-size: 10px;
-  padding: 3px 8px;
-  border-radius: var(--radius-pill);
-  background: var(--emerald-soft);
-  color: var(--emerald);
-  font-weight: 600;
-}
+/* Template cards w/ real miniature preview */
+.tpl-card{ background:var(--paper); border:1px solid var(--line); border-radius:var(--radius-card); overflow:hidden; cursor:pointer; transition:transform .15s ease, box-shadow .15s ease, border-color .15s ease; }
+.tpl-card:hover{ transform:translateY(-3px); box-shadow:var(--shadow-2); border-color:var(--emerald); }
+.tpl-card.selected{ border-color:var(--emerald); box-shadow:0 0 0 2px var(--emerald-soft); }
+.tpl-thumb-frame{ height:170px; overflow:hidden; position:relative; background:#EFEAE0; }
+.thumb-scale{ width:794px; transform: scale(0.185); transform-origin: top left; position:absolute; top:0; left:0; pointer-events:none; }
+.tpl-card-body{ padding:10px 12px 12px; border-top:1px solid var(--line); display:flex; align-items:center; justify-content:space-between; gap:8px; }
+.tpl-card-body h3{ margin:0; font-size:13.5px; font-weight:600; }
+.tpl-use-btn{ border:1px solid var(--emerald); background:var(--emerald-soft); color:var(--emerald); font-size:11px; font-weight:700; padding:5px 10px; border-radius:6px; }
+.tpl-use-btn:hover{ background:var(--emerald); color:#fff; }
 
-/* Toolbar enhancements */
-.tb-divider{
-  width: 1px;
-  height: 24px;
-  background: rgba(255,255,255,.2);
-  margin: 0 4px;
-}
-.zoom-level{
-  font-size: 12px;
-  color: rgba(255,255,255,.8);
-  min-width: 45px;
-  text-align: center;
-}
-.preview-actions{
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  background: var(--bg);
-  border-radius: var(--radius-btn);
-  padding: 4px;
-  border: 1px solid var(--line);
-}
-.preview-actions .tb-btn{
-  background: transparent;
-  color: var(--ink);
-  border: none;
-  padding: 6px 10px;
-}
-.preview-actions .tb-btn:hover{
-  background: var(--emerald-soft);
-}
-
-/* Template preview mini */
-.template-preview-bar{
-  height: 12px;
-  border-radius: 3px;
-}
-.template-preview-card{
-  flex: 1;
-  border-radius: 4px;
-  display: flex;
-  gap: 4px;
-}
-.template-preview-card > div{
-  flex: 1;
-  border-radius: 3px;
-}
-
-/* Library enhancements */
-.lib-item{
-  transition: all .15s;
-}
-.lib-item:hover{
-  border-color: var(--emerald);
-  box-shadow: var(--shadow-1);
-}
-
-/* Toast enhancements */
-.toast{
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-/* Modal enhancements */
-.template-modal-inner{
-  max-width: 1100px;
-}
-.template-modal-body{
-  padding: 24px;
-  overflow-y: auto;
-  max-height: 70vh;
-}
-.template-grid-modal{
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 16px;
-}
-
-/* Section hover in preview */
-.poster-section{
-  position: relative;
-}
-.poster-section:hover::after{
-  content: '';
-  position: absolute;
-  inset: -4px;
-  border: 2px dashed var(--emerald);
-  border-radius: 6px;
-  pointer-events: none;
-  opacity: .5;
-}
-
-/* Preview-only mode */
-body.preview-only .editor{
-  display: none !important;
-}
-body.preview-only .drawer-toggle{
-  display: none !important;
-}
-
-/* Animations */
-@keyframes fadeIn{
-  from{ opacity: 0; transform: translateY(8px); }
-  to{ opacity: 1; transform: none; }
-}
-.gallery-card{
-  animation: fadeIn .3s ease backwards;
-}
-.gallery-card:nth-child(1){ animation-delay: .02s; }
-.gallery-card:nth-child(2){ animation-delay: .04s; }
-.gallery-card:nth-child(3){ animation-delay: .06s; }
-.gallery-card:nth-child(4){ animation-delay: .08s; }
-.gallery-card:nth-child(5){ animation-delay: .10s; }
-.gallery-card:nth-child(6){ animation-delay: .12s; }
-.gallery-card:nth-child(7){ animation-delay: .14s; }
-.gallery-card:nth-child(8){ animation-delay: .16s; }
-
-/* Color picker enhancement */
-.field input[type=color]{
-  cursor: pointer;
-  border-radius: 8px;
-}
-
-/* Empty state */
-.empty-state{
-  text-align: center;
-  padding: 40px 20px;
-  color: var(--ink-soft);
-}
-.empty-state svg{
-  width: 48px;
-  height: 48px;
-  margin-bottom: 12px;
-  opacity: .4;
-}
-.empty-state h3{
-  margin: 0 0 6px;
-  font-size: 16px;
-  color: var(--ink);
-}
-.empty-state p{
-  margin: 0;
-  font-size: 13px;
-}
-
-/* Responsive enhancements */
-@media (max-width: 1200px){
-  .gallery-grid{
-    grid-template-columns: repeat(3, 1fr);
-  }
-}
 @media (max-width: 900px){
-  .gallery-grid{
-    grid-template-columns: repeat(2, 1fr);
-  }
-  .gallery-actions{
-    flex-direction: column;
-  }
-  .gallery-actions button{
-    width: 100%;
-  }
+  .gallery-grid{ grid-template-columns: repeat(2,1fr); }
+  .gallery-library-list{ grid-template-columns: 1fr; }
 }
-@media (max-width: 600px){
-  .gallery-grid{
-    grid-template-columns: 1fr;
-  }
-  .gallery-filters{
-    overflow-x: auto;
-    flex-wrap: nowrap;
-    padding-bottom: 8px;
-  }
-  .filter-btn{
-    flex-shrink: 0;
-  }
+
+/* =========================================================
+   STUDIO SHELL
+   ========================================================= */
+.studio{ height:100vh; display:flex; flex-direction:column; }
+.toolbar{ height:56px; flex-shrink:0; background:var(--navy); color:#fff; display:flex; align-items:center; justify-content:space-between; padding:0 14px; gap:10px; z-index:30; overflow-x:auto; }
+.toolbar-left{ display:flex; align-items:center; gap:10px; min-width:0; flex-shrink:0; }
+.toolbar-right{ display:flex; align-items:center; gap:6px; flex-shrink:0; }
+.pkg-title-input{ background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.15); color:#fff; padding:7px 10px; border-radius:6px; font-size:14px; font-weight:600; width:200px; }
+.pkg-title-input:focus{ background:rgba(255,255,255,.14); }
+.autosave-indicator{ font-size:12px; color:#B9E3CB; white-space:nowrap; }
+.tb-btn{ background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.14); color:#fff; padding:8px 12px; border-radius:var(--radius-btn); font-size:13px; white-space:nowrap; transition:background .12s; }
+.tb-btn:hover{ background:rgba(255,255,255,.18); }
+.tb-icon{ padding:8px 10px; font-size:15px; }
+.tb-primary{ background:var(--emerald); border-color:var(--emerald); }
+.tb-primary:hover{ background:#0d4429; }
+.tb-danger{ background:transparent; border-color:rgba(255,255,255,.14); color:#E8AFA1; }
+
+.app-body{ flex:1; display:flex; min-height:0; position:relative; }
+.editor{ width:360px; flex-shrink:0; background:var(--paper); border-right:1px solid var(--line); display:flex; flex-direction:column; min-height:0; }
+.editor-tabs{ display:flex; flex-wrap:wrap; gap:4px; padding:10px 10px 8px; border-bottom:1px solid var(--line); flex-shrink:0; max-height:120px; overflow-y:auto; }
+.editor-tab{ border:none; background:var(--bg); color:var(--ink-soft); font-size:12px; font-weight:600; padding:7px 10px; border-radius:var(--radius-pill); }
+.editor-tab.active{ background:var(--emerald); color:#fff; }
+.editor-body{ flex:1; overflow-y:auto; padding:18px 18px 60px; }
+
+.field-group{ margin-bottom:18px; }
+.field-group h4{ font-size:11px; letter-spacing:.04em; color:var(--ink-soft); margin:0 0 10px; font-weight:700; }
+.field{ margin-bottom:12px; }
+.field label{ display:block; font-size:12.5px; color:var(--ink-soft); margin-bottom:4px; }
+.field input[type=text], .field input[type=number], .field input[type=date], .field input[type=color],
+.field input[type=url], .field input[type=email], .field input[type=tel], .field select, .field textarea{
+  width:100%; padding:9px 10px; border:1px solid var(--line); border-radius:7px; font-size:13.5px; background:var(--bg); color:var(--ink);
+}
+.field input[type=color]{ padding:3px; height:38px; }
+.field textarea{ resize:vertical; min-height:60px; }
+.field-row{ display:flex; gap:10px; } .field-row > .field{ flex:1; }
+.checkbox-row{ display:flex; align-items:center; gap:8px; margin-bottom:12px; } .checkbox-row label{ font-size:13px; color:var(--ink); }
+
+.editor-item-card{ border:1px solid var(--line); border-radius:8px; padding:12px; margin-bottom:12px; background:var(--bg); }
+.editor-item-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; }
+.editor-item-head span{ font-size:12px; font-weight:700; color:var(--emerald); }
+.editor-item-actions{ display:flex; gap:4px; }
+.mini-btn{ border:1px solid var(--line); background:var(--paper); border-radius:5px; font-size:11px; padding:3px 7px; color:var(--ink-soft); }
+.mini-btn:hover{ border-color:var(--emerald); color:var(--emerald); }
+.mini-btn.danger:hover{ border-color:var(--danger); color:var(--danger); }
+.add-btn{ width:100%; padding:10px; border:1.5px dashed var(--line); background:none; border-radius:8px; color:var(--emerald); font-size:13px; font-weight:600; }
+.add-btn:hover{ background:var(--emerald-soft); }
+.upload-box{ border:1.5px dashed var(--line); border-radius:8px; padding:14px; text-align:center; cursor:pointer; font-size:12.5px; color:var(--ink-soft); position:relative; overflow:hidden; }
+.upload-box:hover{ border-color:var(--emerald); }
+.upload-box img{ max-height:60px; max-width:100%; margin-bottom:6px; object-fit:contain; }
+.upload-box input[type=file]{ position:absolute; inset:0; opacity:0; cursor:pointer; }
+.layout-row{ display:flex; align-items:center; justify-content:space-between; padding:8px 10px; border:1px solid var(--line); border-radius:7px; margin-bottom:6px; background:var(--bg); font-size:13px; }
+.empty-hint{ color:var(--ink-soft); font-size:12.5px; padding:10px 0; }
+.current-tpl-card{ border:1px solid var(--line); border-radius:8px; padding:14px; background:var(--bg); display:flex; flex-direction:column; gap:6px; }
+.current-tpl-card b{ font-size:15px; }
+
+.drawer-toggle{ display:none; }
+
+/* PREVIEW AREA */
+.preview-wrap{ flex:1; min-width:0; display:flex; flex-direction:column; background:#EFEAE0; }
+.preview-toolbar{ display:flex; align-items:center; justify-content:space-between; padding:10px 20px; background:var(--paper); border-bottom:1px solid var(--line); flex-shrink:0; flex-wrap:wrap; gap:10px; }
+.zoom-controls{ display:flex; align-items:center; gap:6px; }
+.zoom-label{ font-size:12.5px; color:var(--ink-soft); width:42px; text-align:center; }
+.preview-scroll{ flex:1; overflow:auto; display:flex; justify-content:center; padding:30px 16px 60px; }
+.poster-frame{ background:#fff; box-shadow:var(--shadow-2); flex-shrink:0; transform-origin: top center; transition: transform .1s ease; }
+
+/* =========================================================
+   POSTER BASE + SHARED BLOCKS (used across all 10 templates)
+   ========================================================= */
+.poster{
+  width:794px; min-height:1123px; background:var(--poster-bg,#FEFDFB); color:var(--poster-ink,#23201A);
+  font-family:var(--poster-body-font,'Work Sans'), sans-serif; position:relative; overflow:hidden;
+}
+.poster *{ box-sizing:border-box; }
+.poster h1,.poster h2,.poster h3{ font-family:var(--poster-heading-font,'Fraunces'), serif; margin:0; }
+
+.meta-chip{ background:var(--poster-primary-soft,#E6F0EA); color:var(--poster-primary,#0F5132); border-radius:var(--radius-pill); padding:5px 12px; font-size:11.5px; font-weight:700; display:inline-block; }
+
+.services-grid{ display:grid; grid-template-columns:repeat(5,1fr); gap:8px; }
+.service-item{ text-align:center; padding:8px 4px; }
+.service-item svg{ width:20px; height:20px; margin-bottom:4px; color:var(--poster-primary,#0F5132); }
+.service-item h6{ margin:0; font-size:10.5px; font-weight:700; }
+.service-item p{ margin:2px 0 0; font-size:9px; color:var(--ink-soft); }
+
+.terms-list{ margin:0; padding-left:16px; font-size:10.5px; color:var(--ink-soft); line-height:1.6; }
+.blk-heading{ font-size:12.5px; margin:0 0 6px; color:var(--poster-primary,#0F5132); text-transform:uppercase; letter-spacing:.04em; }
+
+.blk-child-infant{ display:flex; gap:10px; }
+.ci-card{ flex:1; border:1px solid var(--line-poster,#E6E0D2); border-radius:8px; padding:10px 14px; display:flex; align-items:center; justify-content:space-between; }
+.ci-card b{ font-size:12.5px; } .ci-card .ci-price{ font-family:var(--poster-price-font,'Fraunces'), serif; font-weight:700; font-size:15px; color:var(--poster-primary,#0F5132); }
+
+.blk-footer{ display:flex; justify-content:space-between; align-items:center; font-size:10.5px; color:var(--ink-soft); padding-top:10px; border-top:1px solid var(--line-poster,#E6E0D2); }
+.footer-agency{ display:flex; align-items:center; gap:8px; } .footer-agency img{ height:22px; object-fit:contain; } .footer-agency b{ color:var(--poster-ink); font-size:12px; }
+.footer-contacts{ text-align:right; line-height:1.5; }
+.footer-bold{ flex-direction:column; align-items:flex-start; gap:6px; border-top:none; padding:14px 0 0; }
+.footer-big-contact{ font-size:15px; font-weight:700; color:var(--poster-ink); }
+
+/* flight variants */
+.flights-compact .flight-card{ border:1px solid var(--line-poster,#E6E0D2); border-radius:8px; padding:9px 11px; margin-bottom:6px; }
+.flights-compact .flight-card-top{ display:flex; justify-content:space-between; font-size:10.5px; font-weight:700; color:var(--poster-primary,#0F5132); margin-bottom:3px; }
+.flights-compact .flight-route{ display:flex; align-items:center; gap:8px; font-size:12px; font-weight:600; }
+.flights-compact .arrow{ color:var(--ink-soft); }
+.flights-compact .flight-details{ margin-top:3px; font-size:9.5px; color:var(--ink-soft); }
+.flights-route{ display:flex; gap:8px; flex-wrap:wrap; }
+.route-card{ flex:1; min-width:220px; border:1.5px solid var(--poster-primary,#0F5132); border-radius:10px; padding:10px 12px; }
+.route-top{ display:flex; justify-content:space-between; font-size:9.5px; font-weight:700; color:var(--poster-primary,#0F5132); text-transform:uppercase; letter-spacing:.03em; margin-bottom:6px; }
+.route-dir{ opacity:.7; }
+.route-line{ display:flex; align-items:center; gap:6px; font-size:15px; font-weight:700; }
+.route-code{ font-family:var(--poster-price-font); }
+.route-dash{ flex:1; height:1px; background:var(--line-poster,#ccc); min-width:16px; }
+.route-line svg{ width:14px; height:14px; color:var(--poster-primary,#0F5132); flex-shrink:0; }
+.route-times{ display:flex; gap:10px; font-size:9.5px; color:var(--ink-soft); margin-top:5px; flex-wrap:wrap; }
+.flights-timeline{ display:flex; flex-direction:column; gap:8px; }
+.tl-item{ display:flex; gap:8px; align-items:flex-start; }
+.tl-dot{ width:8px; height:8px; border-radius:50%; background:var(--poster-primary,#0F5132); margin-top:5px; flex-shrink:0; }
+.tl-body b{ display:block; font-size:11.5px; } .tl-body span{ font-size:10px; color:var(--ink-soft); }
+
+/* hotel variants */
+.hp-card{ flex:1; border-radius:8px; overflow:hidden; background:var(--poster-card,#fff); border:1px solid var(--line-poster,#E6E0D2); }
+.hp-img{ height:90px; background-size:cover; background-position:center; background-color:var(--poster-primary-soft,#eee); display:flex; align-items:center; justify-content:center; }
+.hp-ph{ font-size:11px; font-weight:700; color:var(--poster-primary,#0F5132); opacity:.6; text-transform:uppercase; letter-spacing:.05em; }
+.hp-body{ padding:8px 10px; } .hp-body h5{ margin:0 0 3px; font-size:12px; font-weight:700; }
+.hp-body p{ margin:0; font-size:9.5px; color:var(--ink-soft); line-height:1.4; }
+.hp-rating{ font-size:9.5px; color:var(--poster-gold,#B8892E); margin-top:3px; }
+.ht-row{ display:flex; align-items:flex-start; gap:8px; margin-bottom:6px; }
+.ht-row svg{ width:15px; height:15px; color:var(--poster-primary,#0F5132); flex-shrink:0; margin-top:2px; }
+.ht-row b{ font-size:11.5px; display:block; } .ht-row span{ font-size:10px; color:var(--ink-soft); }
+
+/* pricing variants */
+.pr-pills{ display:flex; gap:8px; flex-wrap:wrap; }
+.pr-pill{ flex:1; min-width:80px; background:var(--poster-card,#fff); border:1px solid var(--line-poster,#E6E0D2); border-radius:8px; padding:8px 10px; text-align:center; }
+.pr-type{ font-size:9.5px; text-transform:uppercase; letter-spacing:.03em; color:var(--ink-soft); display:block; margin-bottom:2px; }
+.pr-amt{ font-family:var(--poster-price-font,'Fraunces'), serif; font-size:var(--price-size,16px); font-weight:700; color:var(--poster-primary,#0F5132); }
+.pr-label{ font-size:9px; color:var(--ink-soft); display:block; }
+.pr-table{ width:100%; border-collapse:collapse; font-size:11.5px; }
+.pr-table td{ padding:6px 4px; border-bottom:1px solid var(--line-poster,#E6E0D2); }
+.pr-table td:last-child{ text-align:right; font-weight:700; font-family:var(--poster-price-font); color:var(--poster-primary,#0F5132); }
+.pr-label-inline{ color:var(--ink-soft); font-weight:400; }
+.pr-ticket{ display:flex; gap:0; border:1px dashed var(--poster-gold,#B8892E); border-radius:8px; overflow:hidden; }
+.pr-stub{ flex:1; padding:8px 6px; text-align:center; border-right:1px dashed var(--poster-gold,#B8892E); }
+.pr-stub:last-child{ border-right:none; }
+.pr-stub span{ display:block; font-size:9px; text-transform:uppercase; color:var(--ink-soft); }
+.pr-stub b{ font-family:var(--poster-price-font); font-size:14px; color:var(--poster-gold,#B8892E); }
+
+/* =========================================================
+   TEMPLATE 1 — LUXURY GOLD (dark, centered hero, framed panels, ticket pricing)
+   ========================================================= */
+.tpl-luxury-gold .lux-frame{ padding:0 0 22px; display:flex; flex-direction:column; gap:16px; }
+.tpl-luxury-gold .lux-hero{ min-height:230px; background-size:cover; background-position:center; background-color:#1c1712; position:relative; display:flex; align-items:center; justify-content:center; text-align:center; border-bottom:2px solid var(--poster-gold,#C9A227); }
+.tpl-luxury-gold .lux-hero-overlay{ position:absolute; inset:0; background:linear-gradient(180deg, rgba(10,8,6,.55), rgba(10,8,6,.85)); }
+.tpl-luxury-gold .lux-hero-content{ position:relative; z-index:2; padding:0 30px; }
+.tpl-luxury-gold .lux-kicker{ color:var(--poster-gold,#C9A227); font-size:11px; letter-spacing:.12em; }
+.tpl-luxury-gold .lux-hero-content h1{ font-size:var(--heading-size,32px); color:#fff; margin:10px 0 6px; }
+.tpl-luxury-gold .lux-hero-content p{ color:#E9DFC8; font-size:12.5px; margin:0 0 10px; }
+.tpl-luxury-gold .lux-meta{ display:flex; gap:8px; justify-content:center; flex-wrap:wrap; }
+.tpl-luxury-gold .lux-package{ margin:0 30px; border:1px solid #3A3226; border-radius:10px; padding:16px; }
+.tpl-luxury-gold .lux-pkg-head{ display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; }
+.tpl-luxury-gold .lux-pkg-head h2{ color:var(--poster-gold,#C9A227); font-size:18px; }
+.tpl-luxury-gold .lux-badge{ border:1px solid var(--poster-gold,#C9A227); color:var(--poster-gold,#C9A227); font-size:9.5px; padding:3px 10px; border-radius:var(--radius-pill); }
+.tpl-luxury-gold .lux-desc{ font-size:11px; color:#C9C2B4; margin:0 0 10px; }
+.tpl-luxury-gold .lux-hotel-row{ display:flex; gap:10px; margin-bottom:12px; }
+.tpl-luxury-gold .hp-card{ background:#1D1915; border-color:#3A3226; }
+.tpl-luxury-gold .blk-services, .tpl-luxury-gold .blk-terms, .tpl-luxury-gold .blk-footer, .tpl-luxury-gold .blk-flights, .tpl-luxury-gold .blk-child-infant{ margin:0 30px; }
+.tpl-luxury-gold .blk-footer{ border-top-color:#3A3226; }
+
+/* =========================================================
+   TEMPLATE 2 — ROYAL GREEN (centered banner, side-by-side photos, pill pricing)
+   ========================================================= */
+.tpl-royal-green .rg-frame{ padding:26px 32px; display:flex; flex-direction:column; gap:16px; }
+.tpl-royal-green .rg-title-band{ text-align:center; padding-bottom:12px; border-bottom:2px solid var(--poster-secondary,#B8892E); }
+.tpl-royal-green .rg-title-band h1{ font-size:var(--heading-size,32px); color:var(--poster-primary,#F3D27A); }
+.tpl-royal-green .rg-title-band p{ margin:4px 0 10px; font-size:12.5px; color:#DDEBE2; }
+.tpl-royal-green .rg-meta{ display:flex; gap:8px; justify-content:center; flex-wrap:wrap; }
+.tpl-royal-green .rg-pkg-title{ display:flex; align-items:center; gap:10px; margin-bottom:8px; }
+.tpl-royal-green .rg-pkg-title h2{ color:var(--poster-primary,#F3D27A); font-size:17px; }
+.tpl-royal-green .rg-badge{ background:var(--poster-secondary,#B8892E); color:#1a1a1a; font-size:9.5px; padding:3px 10px; border-radius:var(--radius-pill); font-weight:700; }
+.tpl-royal-green .rg-photo-split{ display:flex; gap:10px; margin-bottom:10px; }
+.tpl-royal-green .hp-card{ background:#0F4A2E; border-color:#1F5C3D; }
+.tpl-royal-green .hp-body p, .tpl-royal-green .hp-body h5{ color:#F0EADA; }
+.tpl-royal-green .pr-pill{ background:#0F4A2E; border-color:#1F5C3D; }
+.tpl-royal-green .pr-amt{ color:var(--poster-secondary,#F3D27A); }
+.tpl-royal-green .blk-footer{ border-top-color:#1F5C3D; }
+
+/* =========================================================
+   TEMPLATE 3 — MAKKAH & MADINAH (split-screen photography + floating card)
+   ========================================================= */
+.tpl-makkah-madinah .mm-frame{ position:relative; padding-bottom:22px; }
+.tpl-makkah-madinah .mm-split{ display:flex; height:260px; }
+.tpl-makkah-madinah .mm-half{ flex:1; background-size:cover; background-position:center; background-color:#DCE3E8; position:relative; display:flex; align-items:flex-end; padding:10px; }
+.tpl-makkah-madinah .mm-cap{ background:rgba(0,0,0,.55); color:#fff; font-size:11px; font-weight:700; padding:4px 10px; border-radius:6px; }
+.tpl-makkah-madinah .mm-float-card{ background:#fff; box-shadow:var(--shadow-2); border-radius:10px; padding:16px 22px; margin:-40px 40px 16px; position:relative; z-index:3; text-align:center; }
+.tpl-makkah-madinah .mm-float-card h1{ font-size:24px; color:var(--poster-primary,#1B2A4A); }
+.tpl-makkah-madinah .mm-float-card p{ font-size:12px; color:var(--ink-soft); margin:4px 0 8px; }
+.tpl-makkah-madinah .mm-meta{ display:flex; gap:8px; justify-content:center; flex-wrap:wrap; }
+.tpl-makkah-madinah .mm-package{ margin:0 32px 14px; }
+.tpl-makkah-madinah .mm-pkg-head{ display:flex; align-items:center; gap:10px; margin-bottom:6px; }
+.tpl-makkah-madinah .mm-pkg-head h3{ color:var(--poster-secondary,#0F5132); font-size:15px; }
+.tpl-makkah-madinah .mm-badge{ background:var(--poster-secondary,#0F5132); color:#fff; font-size:9px; padding:2px 8px; border-radius:var(--radius-pill); }
+.tpl-makkah-madinah .mm-hotel-lines{ margin-bottom:8px; }
+.tpl-makkah-madinah .blk-flights, .tpl-makkah-madinah .blk-child-infant, .tpl-makkah-madinah .blk-services, .tpl-makkah-madinah .blk-terms, .tpl-makkah-madinah .blk-footer{ margin:0 32px 14px; }
+
+/* =========================================================
+   TEMPLATE 4 — AIRLINE PREMIUM (boarding-pass route + hotel timeline + ticket pricing)
+   ========================================================= */
+.tpl-airline-premium .ap-frame{ padding:26px 30px; display:flex; flex-direction:column; gap:14px; }
+.tpl-airline-premium .ap-ticket-head{ display:flex; justify-content:space-between; align-items:flex-end; gap:14px; }
+.tpl-airline-premium .ap-eyebrow{ font-size:10px; letter-spacing:.1em; color:var(--poster-secondary,#3B5EA8); font-weight:700; }
+.tpl-airline-premium .ap-ticket-left h1{ font-size:26px; margin:4px 0; }
+.tpl-airline-premium .ap-ticket-left p{ font-size:12px; color:var(--ink-soft); margin:0; }
+.tpl-airline-premium .ap-airline-box{ display:flex; align-items:center; gap:8px; background:var(--poster-primary,#12233F); color:#fff; padding:8px 14px; border-radius:8px; font-weight:700; font-size:12px; }
+.tpl-airline-premium .ap-airline-box img{ height:20px; }
+.tpl-airline-premium .ap-perforation{ border-top:2px dashed var(--line-poster,#D8E0EC); }
+.tpl-airline-premium .ap-package{ border:1px solid var(--line-poster,#D8E0EC); border-radius:10px; padding:14px 16px; }
+.tpl-airline-premium .ap-pkg-head{ display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
+.tpl-airline-premium .ap-pkg-head h3{ font-size:15px; color:var(--poster-primary,#12233F); }
+.tpl-airline-premium .ap-badge{ background:var(--poster-secondary,#3B5EA8); color:#fff; font-size:9px; padding:3px 9px; border-radius:var(--radius-pill); }
+.tpl-airline-premium .ap-timeline{ margin-bottom:10px; }
+
+/* =========================================================
+   TEMPLATE 5 — MODERN CARD (dashboard grid of independent rounded cards)
+   ========================================================= */
+.tpl-modern-card .mc-frame{ padding:24px 26px; }
+.tpl-modern-card .mc-header-card{ display:flex; align-items:center; gap:12px; background:var(--poster-primary,#0F5132); color:#fff; border-radius:12px; padding:16px 18px; margin-bottom:10px; }
+.tpl-modern-card .mc-logo{ height:36px; width:36px; object-fit:contain; background:#fff; border-radius:8px; padding:4px; }
+.tpl-modern-card .mc-header-card h1{ font-size:20px; color:#fff; } .tpl-modern-card .mc-header-card p{ font-size:11.5px; margin:2px 0 0; opacity:.9; }
+.tpl-modern-card .mc-chip-row{ display:flex; gap:8px; flex-wrap:wrap; margin-bottom:14px; }
+.tpl-modern-card .mc-grid{ display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px; }
+.tpl-modern-card .mc-card{ background:var(--poster-card,#fff); border:1px solid var(--line-poster,#E6E0D2); border-radius:12px; padding:14px; box-shadow:0 2px 6px rgba(0,0,0,.04); }
+.tpl-modern-card .mc-flight-card{ grid-column:1/-1; }
+.tpl-modern-card .mc-package-card{ border-top:4px solid var(--pkg-color,#0F5132); }
+.tpl-modern-card .mc-pkg-top{ display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; }
+.tpl-modern-card .mc-pkg-top h3{ font-size:14.5px; }
+.tpl-modern-card .mc-badge{ background:var(--poster-primary-soft); color:var(--poster-primary); font-size:9px; padding:3px 8px; border-radius:var(--radius-pill); font-weight:700; }
+.tpl-modern-card .mc-hotel-mini{ margin-bottom:8px; }
+
+/* =========================================================
+   TEMPLATE 6 — MINIMAL PROFESSIONAL (document style, label:value rows)
+   ========================================================= */
+.tpl-minimal-professional .mn-frame{ padding:34px 40px; font-size:12.5px; }
+.tpl-minimal-professional .mn-head h1{ font-size:26px; font-weight:600; }
+.tpl-minimal-professional .mn-head p{ margin:4px 0 8px; color:var(--ink-soft); }
+.tpl-minimal-professional .mn-meta-line{ font-size:11px; color:var(--ink-soft); margin-bottom:10px; }
+.tpl-minimal-professional hr{ border:none; border-top:1px solid var(--line-poster,#E2E2E2); margin:12px 0; }
+.tpl-minimal-professional .mn-package h3{ font-size:15px; margin-bottom:4px; }
+.tpl-minimal-professional .mn-desc{ color:var(--ink-soft); font-size:11.5px; margin:0 0 8px; }
+.tpl-minimal-professional .mn-row{ display:flex; justify-content:space-between; padding:4px 0; font-size:12px; }
+.tpl-minimal-professional .mn-row span:first-child{ color:var(--ink-soft); }
+.tpl-minimal-professional .mn-price{ font-weight:700; color:var(--poster-accent,#0F5132); }
+.tpl-minimal-professional .mn-flights h4, .tpl-minimal-professional .mn-services h4{ font-size:12px; text-transform:uppercase; letter-spacing:.04em; color:var(--ink-soft); margin:0 0 6px; }
+
+/* =========================================================
+   TEMPLATE 7 — PREMIUM BROCHURE (magazine hero + two-column body)
+   ========================================================= */
+.tpl-premium-brochure .pb-frame{ padding-bottom:26px; }
+.tpl-premium-brochure .pb-hero{ height:220px; background-size:cover; background-position:center; background-color:#c9b79a; position:relative; display:flex; align-items:flex-end; }
+.tpl-premium-brochure .pb-hero-overlay{ position:absolute; inset:0; background:linear-gradient(0deg, rgba(20,15,10,.7), transparent 60%); }
+.tpl-premium-brochure .pb-hero-text{ position:relative; z-index:2; padding:20px 30px; color:#fff; }
+.tpl-premium-brochure .pb-hero-text h1{ font-size:30px; } .tpl-premium-brochure .pb-hero-text p{ font-size:12.5px; margin:4px 0 0; }
+.tpl-premium-brochure .pb-deck{ display:flex; gap:8px; padding:12px 30px 0; flex-wrap:wrap; }
+.tpl-premium-brochure .pb-cols{ display:flex; gap:20px; padding:14px 30px; }
+.tpl-premium-brochure .pb-col-main{ flex:1.4; } .tpl-premium-brochure .pb-col-side{ flex:1; }
+.tpl-premium-brochure .pb-package h3{ font-size:16px; margin-bottom:4px; color:var(--poster-primary,#8A2E1F); }
+.tpl-premium-brochure .pb-badge{ font-size:9.5px; background:var(--poster-accent,#C9A227); color:#3a2c05; padding:2px 8px; border-radius:var(--radius-pill); }
+.tpl-premium-brochure .pb-side-card{ border:1px solid var(--line-poster,#E9DFC8); border-radius:8px; padding:12px; margin-bottom:10px; }
+.tpl-premium-brochure .blk-terms, .tpl-premium-brochure .blk-footer{ padding:0 30px; }
+
+/* =========================================================
+   TEMPLATE 8 — ISLAMIC ELEGANCE (arch hero, geometric border, centered column)
+   ========================================================= */
+.tpl-islamic-elegance .ie-frame{ padding-bottom:22px; }
+.tpl-islamic-elegance .ie-geo-strip{ height:10px; background:repeating-linear-gradient(45deg, var(--poster-secondary,#B8892E) 0 6px, transparent 6px 12px); opacity:.5; }
+.tpl-islamic-elegance .ie-arch{ height:210px; background-size:cover; background-position:center; background-color:#e7dcc0;
+  clip-path: polygon(0 100%, 0 35%, 50% 0, 100% 35%, 100% 100%); margin:0 auto; width:92%; position:relative; }
+.tpl-islamic-elegance .ie-arch-overlay{ position:absolute; inset:0; background:rgba(10,58,36,.45); clip-path:inherit; }
+.tpl-islamic-elegance .ie-arch-text{ position:relative; z-index:2; text-align:center; color:#fff; padding-top:120px; }
+.tpl-islamic-elegance .ie-arch-text h1{ font-size:26px; } .tpl-islamic-elegance .ie-arch-text p{ font-size:12px; margin:4px 0 0; }
+.tpl-islamic-elegance .ie-meta{ display:flex; justify-content:center; gap:8px; flex-wrap:wrap; margin:14px 0; }
+.tpl-islamic-elegance .ie-narrow{ max-width:600px; margin:0 auto; padding:0 20px; }
+.tpl-islamic-elegance .ie-panel{ border:1px solid var(--line-poster,#E3D6B4); border-radius:14px 14px 4px 4px; padding:14px 16px; margin-bottom:12px; position:relative; }
+.tpl-islamic-elegance .ie-panel h3{ font-size:15px; color:var(--poster-secondary,#B8892E); margin-bottom:8px; }
+.tpl-islamic-elegance .ie-price-board{ margin-top:8px; }
+
+/* =========================================================
+   TEMPLATE 9 — SEASONAL SPECIAL (ribbon banner, diagonal accent, hero price)
+   ========================================================= */
+.tpl-seasonal-special .ss-frame{ position:relative; padding:0 30px 22px; overflow:hidden; }
+.tpl-seasonal-special .ss-diagonal{ position:absolute; top:-60px; right:-120px; width:340px; height:220px; background:var(--poster-primary,#A3402E); opacity:.12; transform:rotate(18deg); z-index:0; }
+.tpl-seasonal-special .ss-head{ position:relative; z-index:1; padding-top:24px; }
+.tpl-seasonal-special .ss-ribbon{ display:inline-block; background:var(--poster-primary,#A3402E); color:#fff; font-size:10.5px; font-weight:700; letter-spacing:.05em; padding:5px 14px; border-radius:4px 4px 4px 0; margin-bottom:8px; }
+.tpl-seasonal-special .ss-head h1{ font-size:28px; } .tpl-seasonal-special .ss-head p{ font-size:12.5px; color:var(--ink-soft); margin:4px 0 8px; }
+.tpl-seasonal-special .ss-meta{ display:flex; gap:8px; flex-wrap:wrap; margin-bottom:14px; }
+.tpl-seasonal-special .ss-package{ position:relative; z-index:1; border:1px solid var(--line-poster,#F0DFC8); border-radius:10px; padding:14px; margin-bottom:12px; }
+.tpl-seasonal-special .ss-pkg-head{ display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
+.tpl-seasonal-special .ss-badge{ background:var(--poster-secondary,#0F5132); color:#fff; font-size:9px; padding:3px 9px; border-radius:var(--radius-pill); }
+.tpl-seasonal-special .ss-hero-price{ text-align:center; background:var(--poster-primary-soft); border-radius:8px; padding:14px; margin-bottom:10px; }
+.tpl-seasonal-special .ss-hp-type{ display:block; font-size:11px; text-transform:uppercase; color:var(--ink-soft); }
+.tpl-seasonal-special .ss-hp-amt{ font-family:var(--poster-price-font); font-size:28px; font-weight:700; color:var(--poster-primary,#A3402E); }
+.tpl-seasonal-special .ss-other-prices{ display:flex; gap:10px; justify-content:center; flex-wrap:wrap; font-size:11px; color:var(--ink-soft); margin-top:8px; }
+
+/* =========================================================
+   TEMPLATE 10 — SOCIAL MEDIA PREMIUM (vertical, huge title, hero image, price badge)
+   ========================================================= */
+.tpl-social-media-premium .sm-frame{ display:flex; flex-direction:column; height:100%; }
+.tpl-social-media-premium .sm-title-block{ text-align:center; padding:34px 24px 10px; }
+.tpl-social-media-premium .sm-title-block h1{ font-size:38px; line-height:1.05; color:#fff; }
+.tpl-social-media-premium .sm-title-block p{ font-size:14px; color:var(--poster-secondary,#B8892E); margin:8px 0 0; }
+.tpl-social-media-premium .sm-hero{ height:340px; margin:0 24px; border-radius:16px; background-size:cover; background-position:center; background-color:#123826; position:relative; }
+.tpl-social-media-premium .sm-price-badge{ position:absolute; bottom:16px; right:16px; background:var(--poster-secondary,#B8892E); color:#1a1a1a; border-radius:50%; width:92px; height:92px; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; }
+.tpl-social-media-premium .sm-price-badge span{ font-size:9px; text-transform:uppercase; } .tpl-social-media-premium .sm-price-badge b{ font-size:15px; }
+.tpl-social-media-premium .sm-meta{ display:flex; justify-content:center; gap:8px; flex-wrap:wrap; padding:16px 24px 0; }
+.tpl-social-media-premium .sm-hotel-rows{ padding:14px 30px 0; color:#fff; }
+.tpl-social-media-premium .sm-hotel-rows .ht-row b, .tpl-social-media-premium .sm-hotel-rows .ht-row span{ color:#fff; }
+.tpl-social-media-premium .sm-contact-bar{ margin-top:auto; background:var(--poster-secondary,#B8892E); color:#1a1a1a; padding:20px 24px; }
+.tpl-social-media-premium .sm-contact-bar .footer-agency b, .tpl-social-media-premium .sm-contact-bar .footer-big-contact{ color:#1a1a1a; }
+.tpl-social-media-premium .blk-services{ padding:0 24px; }
+
+/* =========================================================
+   MODALS / TOASTS
+   ========================================================= */
+.modal{ position:fixed; inset:0; background:rgba(20,18,14,.55); display:flex; align-items:center; justify-content:center; z-index:100; padding:24px; }
+.modal-inner{ background:var(--paper); border-radius:10px; max-width:920px; width:100%; max-height:92vh; display:flex; flex-direction:column; overflow:hidden; }
+.modal-head{ display:flex; justify-content:space-between; align-items:center; padding:14px 18px; border-bottom:1px solid var(--line); }
+.modal-head h3{ margin:0; font-size:15px; }
+.modal-close{ background:none; border:none; font-size:16px; color:var(--ink-soft); }
+.print-modal-body{ flex:1; overflow:auto; padding:24px; display:flex; justify-content:center; background:#EFEAE0; }
+.modal-foot{ padding:12px 18px; border-top:1px solid var(--line); display:flex; justify-content:flex-end; gap:8px; }
+.a4-frame{ transform:scale(.85); transform-origin:top center; }
+
+.tpl-modal-inner{ max-width:1040px; }
+.tpl-modal-body{ padding:18px 22px; overflow-y:auto; }
+.tpl-modal-body .gallery-grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:16px; }
+
+.export-modal-inner{ max-width:640px; }
+.export-modal-body{ display:flex; gap:24px; padding:18px 22px; }
+.export-col{ flex:1; }
+.export-col h4{ font-size:11px; letter-spacing:.04em; color:var(--ink-soft); margin:0 0 10px; text-transform:uppercase; }
+.radio-row{ display:flex; align-items:center; gap:8px; font-size:13.5px; padding:6px 0; cursor:pointer; }
+.export-col select{ width:100%; padding:8px; border-radius:6px; border:1px solid var(--line); }
+.custom-size-inputs{ display:flex; gap:6px; margin-top:8px; }
+.custom-size-inputs input{ width:80px; padding:6px 8px; border-radius:6px; border:1px solid var(--line); font-size:12.5px; }
+.export-estimate{ padding:0 22px 6px; font-size:12.5px; color:var(--ink-soft); }
+.export-progress{ padding:0 22px 10px; font-size:13px; color:var(--emerald); font-weight:600; }
+
+.toast-host{ position:fixed; bottom:20px; right:20px; display:flex; flex-direction:column; gap:8px; z-index:200; }
+.toast{ background:var(--ink); color:#fff; padding:10px 16px; border-radius:8px; font-size:13px; box-shadow:var(--shadow-2); animation:toastIn .18s ease; max-width:320px; }
+.toast.error{ background:var(--danger); } .toast.success{ background:var(--emerald-dark); }
+@keyframes toastIn{ from{ opacity:0; transform:translateY(6px); } to{ opacity:1; transform:none; } }
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+@media (max-width:1080px){ .editor{ width:320px; } }
+@media (max-width:860px){
+  .app-body{ position:relative; }
+  .editor{ position:fixed; left:0; right:0; bottom:0; top:auto; height:74vh; width:100%; border-right:none; border-top:1px solid var(--line); border-radius:16px 16px 0 0; box-shadow:0 -8px 30px rgba(0,0,0,.18); transform:translateY(100%); transition:transform .22s ease; z-index:40; }
+  .editor.open{ transform:translateY(0); }
+  .drawer-toggle{ display:block; position:fixed; bottom:18px; right:18px; z-index:45; background:var(--emerald); color:#fff; border:none; padding:12px 18px; border-radius:var(--radius-pill); box-shadow:var(--shadow-2); font-size:14px; font-weight:600; }
+  .preview-wrap{ width:100%; }
+  .pkg-title-input{ width:110px; }
+  .tb-btn{ padding:8px 9px; font-size:12px; }
+  .export-modal-body{ flex-direction:column; gap:10px; }
+  .tpl-modal-body .gallery-grid{ grid-template-columns:repeat(2,1fr); }
+  .gallery-grid{ grid-template-columns:repeat(2,1fr); }
+}
+
+/* =========================================================
+   PRINT
+   ========================================================= */
+@media print{
+  body *{ visibility:hidden; }
+  #printFrame, #printFrame *{ visibility:visible; }
+  #printFrame{ position:absolute !important; top:0; left:0; width:210mm !important; }
+  #printFrame .poster{ width:210mm !important; min-height:296mm !important; box-shadow:none; margin:0; }
+  @page{ size:A4; margin:0; }
 }
